@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Guessing Game</title>
+    <title>🎮 Multi-Game Arcade</title>
     <style>
         * {
             margin: 0;
@@ -15,10 +15,57 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .game-selector {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .game-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .game-btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            color: white;
+        }
+
+        .game-btn.number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .game-btn.word {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .game-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.5);
         }
 
         .game-container {
@@ -26,8 +73,6 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             padding: 40px;
-            max-width: 500px;
-            width: 100%;
             text-align: center;
         }
 
@@ -39,8 +84,29 @@
 
         .subtitle {
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-size: 0.9em;
+        }
+
+        .score-board {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            color: #555;
         }
 
         .game-info {
@@ -51,15 +117,27 @@
         }
 
         .attempts {
-            font-size: 1.2em;
+            font-size: 1.1em;
             margin-bottom: 10px;
             color: #555;
         }
 
-        .range {
-            font-size: 1.1em;
-            color: #666;
-            margin-bottom: 10px;
+        .word-display {
+            font-size: 2em;
+            font-weight: bold;
+            letter-spacing: 5px;
+            margin: 20px 0;
+            color: #667eea;
+            word-break: break-word;
+        }
+
+        .hint-display {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+            color: #856404;
+            font-size: 0.9em;
         }
 
         .message {
@@ -72,15 +150,16 @@
             color: #2c3e50;
             border-left: 4px solid #3498db;
             text-align: left;
+            white-space: pre-line;
         }
 
         .input-group {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
-        .guess-input {
+        .game-input {
             flex: 1;
             padding: 15px;
             font-size: 1.1em;
@@ -89,14 +168,14 @@
             transition: all 0.3s;
         }
 
-        .guess-input:focus {
+        .game-input:focus {
             outline: none;
             border-color: #667eea;
         }
 
         button {
             padding: 15px 25px;
-            font-size: 1.1em;
+            font-size: 1em;
             border: none;
             border-radius: 10px;
             cursor: pointer;
@@ -109,18 +188,17 @@
             color: white;
         }
 
-        .guess-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        .hint-btn {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
         }
 
         .new-game-btn {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            width: 100%;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
         }
 
-        .new-game-btn:hover {
+        button:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
@@ -128,6 +206,16 @@
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .action-buttons button {
+            flex: 1;
         }
 
         .progress-bar {
@@ -146,15 +234,6 @@
             width: 0%;
         }
 
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-        }
-
         .win-message {
             background: #d4edda;
             border-left-color: #28a745;
@@ -166,29 +245,60 @@
             border-left-color: #dc3545;
             color: #721c24;
         }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .game-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>🔢 Number Guessing Game</h1>
-        <div class="subtitle">Can you guess the secret number?</div>
-        
-        <div class="game-info">
-            <div class="attempts">Attempts: <span id="attempts">0</span> / <span id="maxAttempts">10</span></div>
-            <div class="range">Range: <span id="minRange">1</span> - <span id="maxRange">100</span></div>
+    <div class="container">
+        <div class="game-selector">
+            <h3 style="text-align: center;">🎮 Choose Your Game</h3>
+            <div class="game-buttons">
+                <button id="numberGameBtn" class="game-btn number">🔢 Number Guessing</button>
+                <button id="wordGameBtn" class="game-btn word">🔤 Word Finding</button>
+            </div>
         </div>
-        
-        <div class="message" id="message">Click "New Game" to start playing!</div>
-        
-        <div class="input-group">
-            <input type="number" id="guessInput" class="guess-input" placeholder="Enter your guess..." step="1">
-            <button id="guessBtn" class="guess-btn">Guess! 🎯</button>
-        </div>
-        
-        <button id="newGameBtn" class="new-game-btn">New Game 🔄</button>
-        
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
+
+        <div class="game-container">
+            <div class="game-icon" id="gameIcon">🎮</div>
+            <h1 id="gameTitle">Select a Game</h1>
+            <div class="subtitle" id="gameSubtitle">Choose a game to start playing!</div>
+            
+            <div class="score-board" id="scoreBoard" style="display: none;">
+                <span class="score-label">🏆 YOUR SCORE</span>
+                <span class="score" id="score">0</span>
+            </div>
+            
+            <div class="game-info" id="gameInfo" style="display: none;">
+                <div class="attempts">Attempts: <span id="attempts">0</span> / <span id="maxAttempts">10</span></div>
+                <div id="wordSpecificInfo"></div>
+            </div>
+            
+            <div class="message" id="message">Click "New Game" to start playing!</div>
+            
+            <div id="gameInputs">
+                <div class="input-group">
+                    <input type="text" id="gameInput" class="game-input" placeholder="Enter your guess..." disabled>
+                    <button id="guessBtn" class="guess-btn" disabled>Guess! 🎯</button>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="hintBtn" class="hint-btn" disabled>💡 Get Hint (-10 pts)</button>
+                    <button id="newGameBtn" class="new-game-btn">🔄 New Game</button>
+                </div>
+            </div>
+            
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
         </div>
     </div>
 
@@ -199,15 +309,27 @@
             localStorage.setItem('gameSessionId', sessionId);
         }
 
-        const guessInput = document.getElementById('guessInput');
+        let currentGameType = null;
+        let gameActive = false;
+
+        const gameInput = document.getElementById('gameInput');
         const guessBtn = document.getElementById('guessBtn');
+        const hintBtn = document.getElementById('hintBtn');
         const newGameBtn = document.getElementById('newGameBtn');
+        const numberGameBtn = document.getElementById('numberGameBtn');
+        const wordGameBtn = document.getElementById('wordGameBtn');
         const messageDiv = document.getElementById('message');
         const attemptsSpan = document.getElementById('attempts');
         const maxAttemptsSpan = document.getElementById('maxAttempts');
-        const minRangeSpan = document.getElementById('minRange');
-        const maxRangeSpan = document.getElementById('maxRange');
         const progressFill = document.getElementById('progressFill');
+        const scoreSpan = document.getElementById('score');
+        const gameTitle = document.getElementById('gameTitle');
+        const gameSubtitle = document.getElementById('gameSubtitle');
+        const gameIcon = document.getElementById('gameIcon');
+        const scoreBoard = document.getElementById('scoreBoard');
+        const gameInfo = document.getElementById('gameInfo');
+        const progressBar = document.getElementById('progressBar');
+        const wordSpecificInfo = document.getElementById('wordSpecificInfo');
 
         async function makeRequest(url, method, body = null) {
             const options = {
@@ -226,16 +348,54 @@
             return await response.json();
         }
 
-        async function getGameState() {
-            const data = await makeRequest('/game_state', 'GET');
+        async function selectGame(gameType) {
+            currentGameType = gameType;
+            const data = await makeRequest('/select_game', 'POST', { game_type: gameType });
+            
+            if (data.error) {
+                messageDiv.textContent = data.error;
+                return;
+            }
+            
             updateUI(data);
-            return data;
+            enableGameControls(true);
+            gameActive = true;
+            
+            if (gameType === 'number') {
+                gameTitle.textContent = '🔢 Number Guessing Game';
+                gameSubtitle.textContent = 'Guess the secret number between 1 and 100!';
+                gameIcon.textContent = '🔢';
+                gameInput.placeholder = 'Enter a number...';
+                gameInput.type = 'number';
+            } else {
+                gameTitle.textContent = '🔤 Word Finding Game';
+                gameSubtitle.textContent = 'Unscramble the word to earn points!';
+                gameIcon.textContent = '🔤';
+                gameInput.placeholder = 'Enter the unscrambled word...';
+                gameInput.type = 'text';
+            }
+            
+            gameInput.focus();
+        }
+
+        async function getGameState() {
+            if (!currentGameType) return;
+            
+            const data = await makeRequest('/game_state', 'GET');
+            if (data.error && data.game_selected === false) {
+                messageDiv.textContent = 'Please select a game first!';
+                enableGameControls(false);
+                gameActive = false;
+                return;
+            }
+            
+            updateUI(data);
         }
 
         async function makeGuess() {
-            const guess = guessInput.value;
+            const guess = gameInput.value;
             if (!guess) {
-                messageDiv.textContent = 'Please enter a number!';
+                messageDiv.textContent = 'Please enter a guess!';
                 return;
             }
             
@@ -244,55 +404,104 @@
             messageDiv.textContent = data.message;
             
             if (data.game_state.game_over) {
-                guessBtn.disabled = true;
-                guessInput.disabled = true;
-                if (data.message.includes('Congratulations')) {
+                enableGameControls(false);
+                if (data.message.includes('CONGRATULATIONS') || data.message.includes('EXCELLENT')) {
                     messageDiv.classList.add('win-message');
                 } else {
                     messageDiv.classList.add('lose-message');
                 }
             } else {
-                guessInput.value = '';
-                guessInput.focus();
+                gameInput.value = '';
+                gameInput.focus();
             }
+        }
+
+        async function getHint() {
+            const data = await makeRequest('/hint', 'POST');
+            updateUI(data.game_state);
+            messageDiv.textContent = data.message;
+            gameInput.focus();
         }
 
         async function newGame() {
             const data = await makeRequest('/new_game', 'POST');
             updateUI(data);
             messageDiv.textContent = data.message;
-            guessBtn.disabled = false;
-            guessInput.disabled = false;
-            guessInput.value = '';
+            enableGameControls(true);
+            gameActive = true;
+            gameInput.value = '';
             messageDiv.classList.remove('win-message', 'lose-message');
-            guessInput.focus();
+            gameInput.focus();
         }
 
         function updateUI(gameState) {
+            if (!gameState) return;
+            
             attemptsSpan.textContent = gameState.attempts;
             maxAttemptsSpan.textContent = gameState.max_attempts;
-            minRangeSpan.textContent = gameState.min_range;
-            maxRangeSpan.textContent = gameState.max_range;
+            scoreSpan.textContent = gameState.score;
             
             const progressPercent = (gameState.attempts / gameState.max_attempts) * 100;
             progressFill.style.width = progressPercent + '%';
             
-            if (gameState.message && !messageDiv.textContent.includes('Congratulations') && !messageDiv.textContent.includes('Game Over')) {
-                messageDiv.textContent = gameState.message;
+            scoreBoard.style.display = 'flex';
+            gameInfo.style.display = 'block';
+            progressBar.style.display = 'block';
+            
+            if (gameState.type === 'word') {
+                wordSpecificInfo.innerHTML = `
+                    <div class="word-display">🔤 ${gameState.scrambled_word}</div>
+                    <div class="hint-display">💡 Hint: ${gameState.hint}</div>
+                    <div>📏 Word length: ${gameState.word_length} letters</div>
+                    <div>💡 Hints used: ${gameState.hints_used}/2</div>
+                `;
+            } else {
+                wordSpecificInfo.innerHTML = `
+                    <div>🎯 Range: 1 - 100</div>
+                    <div>💡 Hints used: ${gameState.hints_used}/2</div>
+                `;
+            }
+            
+            if (gameState.message && !gameState.message.includes('CONGRATULATIONS') && 
+                !gameState.message.includes('EXCELLENT') && !gameState.message.includes('Game Over')) {
+                if (!messageDiv.textContent.includes('CONGRATULATIONS') && 
+                    !messageDiv.textContent.includes('EXCELLENT')) {
+                    messageDiv.textContent = gameState.message;
+                }
             }
         }
 
+        function enableGameControls(enabled) {
+            gameInput.disabled = !enabled;
+            guessBtn.disabled = !enabled;
+            hintBtn.disabled = !enabled;
+        }
+
+        numberGameBtn.addEventListener('click', () => {
+            numberGameBtn.classList.add('active');
+            wordGameBtn.classList.remove('active');
+            selectGame('number');
+        });
+        
+        wordGameBtn.addEventListener('click', () => {
+            wordGameBtn.classList.add('active');
+            numberGameBtn.classList.remove('active');
+            selectGame('word');
+        });
+        
         guessBtn.addEventListener('click', makeGuess);
+        hintBtn.addEventListener('click', getHint);
         newGameBtn.addEventListener('click', newGame);
-        guessInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !guessBtn.disabled) {
+        
+        gameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !guessBtn.disabled && gameActive) {
                 makeGuess();
             }
         });
-
-        getGameState().then(() => {
-            guessInput.focus();
-        });
+        
+        // Initialize with no game selected
+        enableGameControls(false);
+        gameActive = false;
     </script>
 </body>
 </html>
