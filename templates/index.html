@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Guessing Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .game-info {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .attempts {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .range {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: bold;
+            min-height: 80px;
+            color: #2c3e50;
+            border-left: 4px solid #3498db;
+            text-align: left;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .guess-input {
+            flex: 1;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .guess-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 15px 25px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .guess-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .guess-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .new-game-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .new-game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .win-message {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+
+        .lose-message {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🔢 Number Guessing Game</h1>
+        <div class="subtitle">Can you guess the secret number?</div>
+        
+        <div class="game-info">
+            <div class="attempts">Attempts: <span id="attempts">0</span> / <span id="maxAttempts">10</span></div>
+            <div class="range">Range: <span id="minRange">1</span> - <span id="maxRange">100</span></div>
+        </div>
+        
+        <div class="message" id="message">Click "New Game" to start playing!</div>
+        
+        <div class="input-group">
+            <input type="number" id="guessInput" class="guess-input" placeholder="Enter your guess..." step="1">
+            <button id="guessBtn" class="guess-btn">Guess! 🎯</button>
+        </div>
+        
+        <button id="newGameBtn" class="new-game-btn">New Game 🔄</button>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = localStorage.getItem('gameSessionId');
+        if (!sessionId) {
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('gameSessionId', sessionId);
+        }
+
+        const guessInput = document.getElementById('guessInput');
+        const guessBtn = document.getElementById('guessBtn');
+        const newGameBtn = document.getElementById('newGameBtn');
+        const messageDiv = document.getElementById('message');
+        const attemptsSpan = document.getElementById('attempts');
+        const maxAttemptsSpan = document.getElementById('maxAttempts');
+        const minRangeSpan = document.getElementById('minRange');
+        const maxRangeSpan = document.getElementById('maxRange');
+        const progressFill = document.getElementById('progressFill');
+
+        async function makeRequest(url, method, body = null) {
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Session-ID': sessionId
+                }
+            };
+            
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+            
+            const response = await fetch(url, options);
+            return await response.json();
+        }
+
+        async function getGameState() {
+            const data = await makeRequest('/game_state', 'GET');
+            updateUI(data);
+            return data;
+        }
+
+        async function makeGuess() {
+            const guess = guessInput.value;
+            if (!guess) {
+                messageDiv.textContent = 'Please enter a number!';
+                return;
+            }
+            
+            const data = await makeRequest('/guess', 'POST', { guess: guess });
+            updateUI(data.game_state);
+            messageDiv.textContent = data.message;
+            
+            if (data.game_state.game_over) {
+                guessBtn.disabled = true;
+                guessInput.disabled = true;
+                if (data.message.includes('Congratulations')) {
+                    messageDiv.classList.add('win-message');
+                } else {
+                    messageDiv.classList.add('lose-message');
+                }
+            } else {
+                guessInput.value = '';
+                guessInput.focus();
+            }
+        }
+
+        async function newGame() {
+            const data = await makeRequest('/new_game', 'POST');
+            updateUI(data);
+            messageDiv.textContent = data.message;
+            guessBtn.disabled = false;
+            guessInput.disabled = false;
+            guessInput.value = '';
+            messageDiv.classList.remove('win-message', 'lose-message');
+            guessInput.focus();
+        }
+
+        function updateUI(gameState) {
+            attemptsSpan.textContent = gameState.attempts;
+            maxAttemptsSpan.textContent = gameState.max_attempts;
+            minRangeSpan.textContent = gameState.min_range;
+            maxRangeSpan.textContent = gameState.max_range;
+            
+            const progressPercent = (gameState.attempts / gameState.max_attempts) * 100;
+            progressFill.style.width = progressPercent + '%';
+            
+            if (gameState.message && !messageDiv.textContent.includes('Congratulations') && !messageDiv.textContent.includes('Game Over')) {
+                messageDiv.textContent = gameState.message;
+            }
+        }
+
+        guessBtn.addEventListener('click', makeGuess);
+        newGameBtn.addEventListener('click', newGame);
+        guessInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !guessBtn.disabled) {
+                makeGuess();
+            }
+        });
+
+        getGameState().then(() => {
+            guessInput.focus();
+        });
+    </script>
+</body>
+</html>
