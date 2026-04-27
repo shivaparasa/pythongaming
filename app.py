@@ -9,11 +9,11 @@ class NumberGame:
     def __init__(self):
         self.secret_number = None
         self.attempts = 0
-        self.max_attempts = 10
+        self.max_attempts = 15
         self.game_over = False
         self.message = ""
         self.min_range = 1
-        self.max_range = 100
+        self.max_range = 1000
         
     def start_new_game(self):
         self.secret_number = random.randint(self.min_range, self.max_range)
